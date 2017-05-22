@@ -12,12 +12,14 @@ import us.myles.ViaVersion.api.minecraft.item.Item;
 import us.myles.ViaVersion.api.platform.ViaPlatformLoader;
 import us.myles.ViaVersion.bukkit.listeners.UpdateListener;
 import us.myles.ViaVersion.bukkit.listeners.protocol1_9to1_8.*;
+import us.myles.ViaVersion.bukkit.providers.BukkitEventTransmitter;
 import us.myles.ViaVersion.bukkit.providers.BukkitViaBulkChunkTranslator;
 import us.myles.ViaVersion.bukkit.providers.BukkitViaMovementTransmitter;
 import us.myles.ViaVersion.protocols.base.ProtocolInfo;
 import us.myles.ViaVersion.protocols.protocol1_9to1_8.providers.BulkChunkTranslatorProvider;
 import us.myles.ViaVersion.protocols.protocol1_9to1_8.providers.HandItemProvider;
 import us.myles.ViaVersion.protocols.protocol1_9to1_8.providers.MovementTransmitterProvider;
+import us.myles.ViaVersion.protocols.protocolsnapshotto1_11_1.providers.EventTransmitter;
 
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -59,6 +61,7 @@ public class BukkitViaLoader implements ViaPlatformLoader {
 
         /* Providers */
         Via.getManager().getProviders().use(BulkChunkTranslatorProvider.class, new BukkitViaBulkChunkTranslator());
+        Via.getManager().getProviders().use(EventTransmitter.class, new BukkitEventTransmitter());
         Via.getManager().getProviders().use(MovementTransmitterProvider.class, new BukkitViaMovementTransmitter());
         Via.getManager().getProviders().use(HandItemProvider.class, new HandItemProvider() {
             @Override

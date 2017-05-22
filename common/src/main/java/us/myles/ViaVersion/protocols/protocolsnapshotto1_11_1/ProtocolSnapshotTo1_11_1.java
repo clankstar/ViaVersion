@@ -4,6 +4,7 @@ import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
 import com.github.steveice10.opennbt.tag.builtin.IntTag;
 import com.github.steveice10.opennbt.tag.builtin.StringTag;
 import us.myles.ViaVersion.api.PacketWrapper;
+import us.myles.ViaVersion.api.Via;
 import us.myles.ViaVersion.api.data.UserConnection;
 import us.myles.ViaVersion.api.minecraft.chunks.Chunk;
 import us.myles.ViaVersion.api.minecraft.chunks.ChunkSection;
@@ -14,6 +15,7 @@ import us.myles.ViaVersion.api.type.Type;
 import us.myles.ViaVersion.packets.State;
 import us.myles.ViaVersion.protocols.protocol1_9_1_2to1_9_3_4.types.Chunk1_9_3_4Type;
 import us.myles.ViaVersion.protocols.protocol1_9_3to1_9_1_2.storage.ClientWorld;
+import us.myles.ViaVersion.protocols.protocolsnapshotto1_11_1.providers.EventTransmitter;
 
 public class ProtocolSnapshotTo1_11_1 extends Protocol {
 
@@ -45,9 +47,15 @@ public class ProtocolSnapshotTo1_11_1 extends Protocol {
                                         int block = section.getBlockId(x, y, z);
                                         // Is this a bed?
                                         if (block == 26) {
+                                            int blockX = x + (chunk.getX() << 4);
+                                            int blockY = y + (i << 4);
+                                            int blockZ = z + (chunk.getZ() << 4);
+
+                                            int color = Via.getManager().getProviders().get(EventTransmitter.class).callAndGetBedEvent(blockX, blockY, blockZ, 14);
+
                                             //  NBT -> { color:14, x:132, y:64, z:222, id:"minecraft:bed" } (Debug output)
                                             CompoundTag tag = new CompoundTag("");
-                                            tag.put(new IntTag("color", 14)); // Set color to red (Default in previous versions)
+                                            tag.put(new IntTag("color", color)); // Set color to red (Default in previous versions)
                                             tag.put(new IntTag("x", x + (chunk.getX() << 4)));
                                             tag.put(new IntTag("y", y + (i << 4)));
                                             tag.put(new IntTag("z", z + (chunk.getZ() << 4)));
