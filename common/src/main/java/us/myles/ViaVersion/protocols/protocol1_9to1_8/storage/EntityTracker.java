@@ -3,7 +3,6 @@ package us.myles.ViaVersion.protocols.protocol1_9to1_8.storage;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
-import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import us.myles.ViaVersion.api.PacketWrapper;
@@ -25,7 +24,6 @@ import us.myles.ViaVersion.protocols.protocol1_9to1_8.Protocol1_9TO1_8;
 import us.myles.ViaVersion.protocols.protocol1_9to1_8.chat.GameMode;
 import us.myles.ViaVersion.protocols.protocol1_9to1_8.metadata.MetadataRewriter;
 import us.myles.ViaVersion.protocols.protocol1_9to1_8.providers.BossBarProvider;
-import us.myles.ViaVersion.protocols.protocol1_9to1_8.providers.BulkChunkTranslatorProvider;
 import us.myles.ViaVersion.protocols.protocol1_9to1_8.providers.EntityIdProvider;
 
 import java.util.*;
@@ -162,6 +160,8 @@ public class EntityTracker extends StoredObject {
                             if (validBlocking.contains(entityID)) {
                                 Item shield = new Item((short) 442, (byte) 1, (short) 0, null);
                                 setSecondHand(entityID, shield);
+                            } else {
+                                setSecondHand(entityID, null);
                             }
                         } else {
                             setSecondHand(entityID, null);
@@ -180,14 +180,13 @@ public class EntityTracker extends StoredObject {
                             knownHolograms.add(entityID);
                             try {
                                 // Send movement
-                                ByteBuf buf = getUser().getChannel().alloc().buffer();
-                                Type.VAR_INT.write(buf, 0x25); // Relative Move Packet
-                                Type.VAR_INT.write(buf, entityID);
-                                buf.writeShort(0);
-                                buf.writeShort((short) (128D * (Via.getConfig().getHologramYOffset() * 32D)));
-                                buf.writeShort(0);
-                                buf.writeBoolean(true);
-                                getUser().sendRawPacket(buf, false);
+                                PacketWrapper wrapper = new PacketWrapper(0x25, null, getUser());
+                                wrapper.write(Type.VAR_INT, entityID);
+                                wrapper.write(Type.SHORT, (short) 0);
+                                wrapper.write(Type.SHORT, (short) (128D * (Via.getConfig().getHologramYOffset() * 32D)));
+                                wrapper.write(Type.SHORT, (short) 0);
+                                wrapper.write(Type.BOOLEAN, true);
+                                wrapper.send(Protocol1_9TO1_8.class, true, false);
                             } catch (Exception ignored) {
                             }
                         }
@@ -242,10 +241,10 @@ public class EntityTracker extends StoredObject {
         return null;
     }
 
-    public void sendTeamPacket(boolean b) {
+    public void sendTeamPacket(boolean add, boolean now) {
         PacketWrapper wrapper = new PacketWrapper(0x41, null, getUser());
         wrapper.write(Type.STRING, "viaversion"); // Use viaversion as name
-        if (b) {
+        if (add) {
             // add
             if (!teamExists) {
                 wrapper.write(Type.BYTE, (byte) 0); // make team
@@ -264,9 +263,9 @@ public class EntityTracker extends StoredObject {
         } else {
             wrapper.write(Type.BYTE, (byte) 1); // remove team
         }
-        teamExists = b;
+        teamExists = add;
         try {
-            wrapper.send(Protocol1_9TO1_8.class);
+            wrapper.send(Protocol1_9TO1_8.class, true, now);
         } catch (Exception e) {
             e.printStackTrace();
         }
