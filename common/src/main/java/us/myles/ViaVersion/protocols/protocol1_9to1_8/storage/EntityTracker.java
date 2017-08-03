@@ -271,6 +271,10 @@ public class EntityTracker extends StoredObject {
         }
     }
 
+    public void sendTeamPacket(boolean add) {
+        sendTeamPacket(true, true);
+    }
+
     public void addMetadataToBuffer(int entityID, List<Metadata> metadataList) {
         if (metadataBuffer.containsKey(entityID)) {
             metadataBuffer.get(entityID).addAll(metadataList);
